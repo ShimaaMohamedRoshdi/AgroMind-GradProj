@@ -41,6 +41,7 @@ import RecommendPlan from "./pages/RecommendPlan";
 import PlanProgress from "./pages/PlanProgress";
 import FarmerPlan from "./pages/FarmerPlan";
 import ViewMyPlans from "./pages/ViewMyPlans";
+import ChatBot from "./components/ChatBot";
 
 function App() {
   const [order, setOrder] = useState(null);
@@ -65,7 +66,7 @@ function App() {
         <Route path="/checkout" element={<CheckOut setOrder={setOrder} />} />
         <Route path="/order" element={<Order order={order} />} />
         <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/checkout" element={<CheckOut setOrder={() => {}} />} />
+        <Route path="/checkout" element={<CheckOut setOrder={() => { }} />} />
         <Route path="/farm-equipment" element={<FarmEquipment />} />
         <Route path="/crop-growing" element={<CropGrowing />} />
         <Route path="/animal-husbandry" element={<AnimalHusbandry />} />
@@ -75,7 +76,7 @@ function App() {
         <Route path="/shopChemicals" element={<ShopChemicals />} />
         <Route path="/FarmerPlan" element={<FarmerPlan />} />
         <Route path="/create-plan" element={<FarmerPlan />} />
-        <Route path="/ViewMyPlans" element={<ViewMyPlans/>} />
+        <Route path="/ViewMyPlans" element={<ViewMyPlans />} />
         <Route path="/category/featured" element={<FeaturedProducts />} />
         <Route path="/category/fertilizers" element={<Fertilizers />} />
         <Route path="/category/organic" element={<OrganicPesticides />} />
@@ -84,6 +85,7 @@ function App() {
         <Route path="/plan-progress/:planId" element={<PlanProgress />} />
       </Routes>
       <Footer />
+      <ChatBot />
     </Router>
   );
 }
