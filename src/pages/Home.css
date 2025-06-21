@@ -1,10 +1,13 @@
 body {
     font-family: 'Poppins', sans-serif;
 }
-  
-h1, h2, h3 {
+
+h1,
+h2,
+h3 {
     font-family: 'Poppins', sans-serif;
-    font-weight: 600; /* Makes headlines bold */
+    font-weight: 600;
+    /* Makes headlines bold */
 }
 
 p {
@@ -16,13 +19,14 @@ p {
     background-color: #0b3d02;
     height: 50px;
     clip-path: polygon(0 50%, 10% 60%, 20% 50%, 30% 60%, 40% 50%, 50% 60%, 60% 50%, 70% 60%, 80% 50%, 90% 60%, 100% 50%, 100% 100%, 0% 100%);
-  }
- /* Hero Section */
+}
+
+/* Hero Section */
 .hero-section {
     position: relative;
     color: white;
     text-align: center;
- 
+
 }
 
 /* Small Tagline */
@@ -38,8 +42,9 @@ p {
 .hero-title {
     font-size: 3rem;
     font-weight: bold;
-    font-family: 'Caveat', cursive; /* Handwritten style */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    font-family: 'Caveat', cursive;
+    /* Handwritten style */
+    color: white !important;
 }
 
 /* Yellow Underline */
@@ -105,6 +110,7 @@ p {
     0% {
         background-position: 100% center;
     }
+
     100% {
         background-position: 0% center;
     }
