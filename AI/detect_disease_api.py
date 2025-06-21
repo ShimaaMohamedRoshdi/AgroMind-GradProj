@@ -285,14 +285,16 @@ def detect_disease():
 
     # Provide concise, enhanced advice
     if "healthy" in model_full_label.lower():
-        # Enhanced but concise healthy message
-        enhanced_message = f"✅ Your {detected_model_plant_actual} plant looks healthy! Continue proper care and monitor regularly for early disease detection."
+        # Clean message without emojis
+        short_message = f"Your {detected_model_plant_actual} plant looks healthy! Continue proper care and monitor regularly."
+        detailed_message = f"Your {detected_model_plant_actual} plant appears to be in excellent health with no signs of disease detected. To maintain this healthy state, continue with your current care routine including proper watering, adequate sunlight, and regular monitoring. Keep an eye out for any changes in leaf color, spots, or unusual growth patterns. Preventive measures such as proper spacing for air circulation, avoiding overhead watering, and maintaining clean garden tools will help prevent future disease issues."
 
         return jsonify({
             'confirmation': True,
             'healthy': True,
             'plant': detected_model_plant_actual,
-            'message': enhanced_message,
+            'message': short_message,
+            'detailed_advice': detailed_message,
             'confidence': confidence,
             'session_id': session_id
         })
@@ -304,8 +306,15 @@ def detect_disease():
         # Extract disease name for display
         disease_name_to_display = detected_model_disease_part if detected_model_disease_part else model_full_label
 
-        # Create enhanced but concise disease message
-        enhanced_message = f"🔍 {detected_model_plant_actual} with {disease_name_to_display} detected ({confidence:.1%} confidence).\n\n💊 Treatment: {advice[:150]}{'...' if len(advice) > 150 else ''}"
+        # Create clean message without emojis
+        short_message = f"{detected_model_plant_actual} with {disease_name_to_display} detected ({confidence:.1%} confidence)."
+
+        # Create brief treatment summary (first sentence of advice)
+        brief_treatment = advice.split(
+            '.')[0] + '.' if '.' in advice else advice[:100] + '...'
+
+        # Full detailed advice remains the same
+        detailed_advice = advice
 
         return jsonify({
             'confirmation': True,
@@ -313,8 +322,9 @@ def detect_disease():
             'plant': detected_model_plant_actual,
             'disease': disease_name_to_display,
             'confidence': confidence,
-            'advice': advice,
-            'message': enhanced_message,  # Use enhanced message instead of ai_response
+            'message': short_message,
+            'brief_treatment': brief_treatment,
+            'detailed_advice': detailed_advice,
             'session_id': session_id
         })
 

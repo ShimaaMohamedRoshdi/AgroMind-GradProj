@@ -19,6 +19,13 @@ function ChatBot() {
     // NEW: Conversation memory support
     const [sessionId, setSessionId] = useState('default');
     const [conversationStarted, setConversationStarted] = useState(false);
+    // NEW: View More functionality
+    const [expandedMessages, setExpandedMessages] = useState(new Set());
+    // NEW: Disease context for follow-up questions
+    const [lastDiseaseContext, setLastDiseaseContext] = useState(null);
+    // NEW: Enhanced responses from Palm AI
+    const [enhancedResponses, setEnhancedResponses] = useState(new Map());
+    const [loadingEnhanced, setLoadingEnhanced] = useState(new Set());
 
     useEffect(() => {
         if (editingMessageId !== null) {
@@ -157,12 +164,37 @@ function ChatBot() {
                 if (!res.ok) throw new Error("Server error");
                 const data = await res.json();
 
-                // Use the concise enhanced response
+                // Handle the new response format
                 if (data.confirmation === false) {
                     botResponse = data.message;
                 } else {
-                    // Use the concise message which includes disease detection + brief analysis
-                    botResponse = data.message;
+                    // Store disease context for follow-up questions
+                    const diseaseContext = data.healthy
+                        ? `Plant: ${data.plant} - Status: Healthy`
+                        : `Plant: ${data.plant} - Disease: ${data.disease} - Confidence: ${(data.confidence * 100).toFixed(1)}% - Treatment: ${data.detailed_advice}`;
+
+                    setLastDiseaseContext(diseaseContext);
+
+                    // Create response with View More functionality
+                    if (data.healthy) {
+                        botResponse = {
+                            type: 'disease_result',
+                            message: data.message,
+                            detailed_advice: data.detailed_advice,
+                            isHealthy: true
+                        };
+                    } else {
+                        botResponse = {
+                            type: 'disease_result',
+                            message: data.message,
+                            brief_treatment: data.brief_treatment,
+                            detailed_advice: data.detailed_advice,
+                            plant: data.plant,
+                            disease: data.disease,
+                            confidence: data.confidence,
+                            isHealthy: false
+                        };
+                    }
                 }
             } else if (userMsgText) {
                 const res = await fetch("http://localhost:5005/palm-chat", {
@@ -170,7 +202,8 @@ function ChatBot() {
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         prompt: userMsgText,
-                        session_id: sessionId
+                        session_id: sessionId,
+                        disease_context: lastDiseaseContext || '' // Include recent disease context
                     }),
                 });
                 if (!res.ok) throw new Error("Server error");
@@ -203,6 +236,14 @@ function ChatBot() {
         if (e.target.files && e.target.files[0]) {
             setImage(e.target.files[0]);
             setImagePreview(URL.createObjectURL(e.target.files[0]));
+
+            // Auto-focus the input field after image upload for better UX
+            setTimeout(() => {
+                const inputField = document.querySelector('input[type="text"][placeholder*="message"]');
+                if (inputField) {
+                    inputField.focus();
+                }
+            }, 100);
         }
     };
 
@@ -219,12 +260,81 @@ function ChatBot() {
                 body: JSON.stringify({ session_id: sessionId })
             });
             setMessages([]);
+            setExpandedMessages(new Set()); // Clear expanded messages too
+            setLastDiseaseContext(null); // Clear disease context too
+            setEnhancedResponses(new Map()); // Clear enhanced responses
+            setLoadingEnhanced(new Set()); // Clear loading states
             console.log("Conversation cleared");
         } catch (error) {
             console.error("Failed to clear conversation:", error);
             // Clear locally even if server request fails
             setMessages([]);
+            setExpandedMessages(new Set());
+            setLastDiseaseContext(null);
+            setEnhancedResponses(new Map());
+            setLoadingEnhanced(new Set());
         }
+    };
+
+    // Function to clean response text from emojis and redundant "Treatment:" text
+    const cleanResponseText = (text) => {
+        if (!text) return text;
+
+        // Remove all emojis using comprehensive regex
+        const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]|[\u{2000}-\u{206F}]|[\u{2070}-\u{209F}]|[\u{20A0}-\u{20CF}]|[\u{2100}-\u{214F}]|[\u{2190}-\u{21FF}]|[\u{2200}-\u{22FF}]|[\u{2300}-\u{23FF}]|[\u{2460}-\u{24FF}]|[\u{25A0}-\u{25FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{FE00}-\u{FE0F}]|[\u{1F000}-\u{1F02F}]|[\u{1F0A0}-\u{1F0FF}]|[\u{E000}-\u{F8FF}]/gu;
+        let cleaned = text.replace(emojiRegex, '').trim();
+
+        // Remove "Treatment:" if it starts with it (case insensitive)
+        cleaned = cleaned.replace(/^treatment:\s*/i, '');
+
+        // Remove any remaining emoji-like characters that might not be caught by the main regex
+        cleaned = cleaned.replace(/[💊🔍⚕️🌿🌱🚨⚠️✅❌🟢🔴🟡🟠]/g, '');
+
+        return cleaned.trim();
+    };
+
+    const toggleMessageExpansion = async (messageId, diseaseData = null) => {
+        const newExpanded = new Set(expandedMessages);
+        if (newExpanded.has(messageId)) {
+            newExpanded.delete(messageId);
+        } else {
+            newExpanded.add(messageId);
+
+            // If expanding and we have disease data, get enhanced response from Palm AI
+            if (diseaseData && !enhancedResponses.has(messageId)) {
+                const newLoading = new Set(loadingEnhanced);
+                newLoading.add(messageId);
+                setLoadingEnhanced(newLoading);
+
+                try {
+                    const enhancedPrompt = `Provide comprehensive, detailed advice for ${diseaseData.plant} affected by ${diseaseData.disease}. Include specific application rates, timing, preventive measures, and monitoring advice. Be thorough and practical for farmers. Do not start with "Treatment:" as this is already shown above.`;
+
+                    const response = await fetch("http://localhost:5005/palm-chat", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            prompt: enhancedPrompt,
+                            session_id: sessionId,
+                            disease_context: `Plant: ${diseaseData.plant} - Disease: ${diseaseData.disease} - Confidence: ${(diseaseData.confidence * 100).toFixed(1)}% - Basic Treatment: ${diseaseData.detailed_advice}`
+                        }),
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const newEnhanced = new Map(enhancedResponses);
+                        newEnhanced.set(messageId, data.response);
+                        setEnhancedResponses(newEnhanced);
+                    }
+                } catch (error) {
+                    console.error("Failed to get enhanced response:", error);
+                } finally {
+                    const newLoading = new Set(loadingEnhanced);
+                    newLoading.delete(messageId);
+                    setLoadingEnhanced(newLoading);
+                }
+            }
+        }
+        setExpandedMessages(newExpanded);
     };
 
     return (
@@ -237,29 +347,44 @@ function ChatBot() {
                     right: 24,
                     zIndex: 1000,
                     borderRadius: "50%",
-                    width: 70,
-                    height: 70,
-                    background: "#4CAF50",
+                    width: 64,
+                    height: 64,
+                    background: "linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)",
                     border: "none",
-                    boxShadow: "0 4px 8px rgba(0,0,0,0.15)",
+                    boxShadow: "0 6px 20px rgba(76, 175, 80, 0.25)",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    transition: "all 0.3s ease-in-out",
-                    padding: 0
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                    padding: 0,
+                    backdropFilter: "blur(10px)"
                 }}
                 onMouseOver={(e) => {
-                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.2)";
-                    e.currentTarget.style.transform = "scale(1.05) translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 8px 25px rgba(76, 175, 80, 0.35)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.background = "linear-gradient(135deg, #388E3C 0%, #4CAF50 100%)";
                 }}
                 onMouseOut={(e) => {
-                    e.currentTarget.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
-                    e.currentTarget.style.transform = "scale(1) translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(76, 175, 80, 0.25)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.background = "linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%)";
                 }}
-                aria-label="Open chat"
+                aria-label="Open AI Assistant"
             >
-                <img src={ChatIcon} alt="Open chat" style={{ width: '50px', height: '50px' }} />
+                <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.1))" }}
+                >
+                    <path
+                        d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16ZM7 9H17V11H7V9ZM7 12H15V14H7V12ZM7 6H17V8H7V6Z"
+                        fill="white"
+                    />
+                </svg>
             </button>
             {open && (
                 <Resizable
@@ -422,7 +547,139 @@ function ChatBot() {
                                                 whiteSpace: 'pre-wrap',
                                                 wordWrap: 'break-word'
                                             }}>
-                                                {msg.bot}
+                                                {typeof msg.bot === 'object' && msg.bot.type === 'disease_result' ? (
+                                                    <div>
+                                                        <div style={{ marginBottom: '8px', fontWeight: '500' }}>
+                                                            {cleanResponseText(msg.bot.message)}
+                                                        </div>
+
+                                                        {!msg.bot.isHealthy && (
+                                                            <div style={{ marginBottom: '8px' }}>
+                                                                {cleanResponseText(msg.bot.brief_treatment)}
+
+                                                                {/* View More button directly below treatment */}
+                                                                <div style={{ marginTop: '8px' }}>
+                                                                    {expandedMessages.has(msg.id || i) ? (
+                                                                        <button
+                                                                            onClick={() => toggleMessageExpansion(msg.id || i)}
+                                                                            style={{
+                                                                                padding: '4px 8px',
+                                                                                background: '#4CAF50',
+                                                                                color: 'white',
+                                                                                border: 'none',
+                                                                                borderRadius: '12px',
+                                                                                fontSize: '12px',
+                                                                                cursor: 'pointer',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            View Less
+                                                                        </button>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() => toggleMessageExpansion(msg.id || i, msg.bot)}
+                                                                            style={{
+                                                                                padding: '4px 8px',
+                                                                                background: '#4CAF50',
+                                                                                color: 'white',
+                                                                                border: 'none',
+                                                                                borderRadius: '12px',
+                                                                                fontSize: '12px',
+                                                                                cursor: 'pointer',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            View More
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Enhanced detailed response from Palm AI */}
+                                                        {expandedMessages.has(msg.id || i) && (
+                                                            <div style={{
+                                                                marginTop: '8px',
+                                                                padding: '8px',
+                                                                backgroundColor: '#f8f9fa',
+                                                                borderRadius: '8px',
+                                                                fontSize: '14px',
+                                                                lineHeight: '1.4'
+                                                            }}>
+                                                                {loadingEnhanced.has(msg.id || i) ? (
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        <div style={{
+                                                                            border: '2px solid #e0e0e0',
+                                                                            borderTop: '2px solid #4CAF50',
+                                                                            borderRadius: '50%',
+                                                                            width: 16,
+                                                                            height: 16,
+                                                                            animation: 'spin 1s linear infinite'
+                                                                        }} />
+                                                                        <span style={{ color: '#666', fontSize: '12px' }}>Getting enhanced treatment details...</span>
+                                                                    </div>
+                                                                ) : enhancedResponses.has(msg.id || i) ? (
+                                                                    cleanResponseText(enhancedResponses.get(msg.id || i))
+                                                                ) : (
+                                                                    cleanResponseText(msg.bot.detailed_advice)
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {/* View More for healthy plants */}
+                                                        {msg.bot.isHealthy && (
+                                                            <div style={{ marginTop: '8px' }}>
+                                                                {expandedMessages.has(msg.id || i) ? (
+                                                                    <div>
+                                                                        <div style={{
+                                                                            marginBottom: '8px',
+                                                                            padding: '8px',
+                                                                            backgroundColor: '#f8f9fa',
+                                                                            borderRadius: '8px',
+                                                                            fontSize: '14px',
+                                                                            lineHeight: '1.4'
+                                                                        }}>
+                                                                            {cleanResponseText(msg.bot.detailed_advice)}
+                                                                        </div>
+                                                                        <button
+                                                                            onClick={() => toggleMessageExpansion(msg.id || i)}
+                                                                            style={{
+                                                                                padding: '4px 8px',
+                                                                                background: '#4CAF50',
+                                                                                color: 'white',
+                                                                                border: 'none',
+                                                                                borderRadius: '12px',
+                                                                                fontSize: '12px',
+                                                                                cursor: 'pointer',
+                                                                                fontWeight: '500'
+                                                                            }}
+                                                                        >
+                                                                            View Less
+                                                                        </button>
+                                                                    </div>
+                                                                ) : (
+                                                                    <button
+                                                                        onClick={() => toggleMessageExpansion(msg.id || i)}
+                                                                        style={{
+                                                                            padding: '4px 8px',
+                                                                            background: '#4CAF50',
+                                                                            color: 'white',
+                                                                            border: 'none',
+                                                                            borderRadius: '12px',
+                                                                            fontSize: '12px',
+                                                                            cursor: 'pointer',
+                                                                            fontWeight: '500'
+                                                                        }}
+                                                                    >
+                                                                        View More
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    cleanResponseText(msg.bot)
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -474,7 +731,7 @@ function ChatBot() {
                                         justifyContent: 'center',
                                     }}
                                 >
-                                    📎
+                                    +
                                 </label>
                                 <input
                                     type="text"
@@ -489,13 +746,18 @@ function ChatBot() {
                                         fontSize: 15,
                                         outline: 'none',
                                     }}
-                                    onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" && !e.shiftKey) {
+                                            e.preventDefault();
+                                            sendMessage();
+                                        }
+                                    }}
                                 />
                             </div>
 
                             {imagePreview && (
                                 <button onClick={handleRemoveImage} style={{ padding: '10px 12px', background: '#ff5252', color: '#fff', border: 'none', borderRadius: 20, cursor: 'pointer', marginRight: 8, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    🗑️
+                                    ×
                                 </button>
                             )}
                             <button onClick={sendMessage} style={{ padding: "8px 12px", background: editingMessageId !== null ? "#4caf50" : "#25D366", color: "#fff", border: "none", borderRadius: 20, cursor: "pointer", transition: "background-color 0.3s ease", display: "flex", alignItems: "center", justifyContent: "center", width: "40px", height: "40px" }}
