@@ -9,6 +9,7 @@ import FarmerSection from "../components/FarmerSection";
 import HealthyLifeSection from "../components/HealthyLifeSection";
 import OrganicSection from "../components/OrganicSection";
 import Categories from "../components/Categories";
+import Brands from "../components/Brands";
 
 function Home() {
   const navigate = useNavigate();
@@ -45,6 +46,8 @@ function Home() {
           backgroundImage: "url('/src/assets/images/index-2.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "100% center",
+          position: "relative",
+          overflow: "hidden" // Add this to ensure the zigzag is visible
         }}
       >
         {/* Dark Overlay */}
@@ -91,13 +94,13 @@ function Home() {
       {/* All other sections of your Home page */}
       <AgricultureSkill />
       <HeroSection />
-      <hr />
       <Categories />
       <hr />
       <FarmerSection />
       <HealthyFoods />
       <HealthyLifeSection />
       <OrganicSection />
+      <Brands />
 
       {/* <Products /> */}
     </div>
