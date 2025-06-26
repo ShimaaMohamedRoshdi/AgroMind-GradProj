@@ -555,6 +555,14 @@ function ChatBot() {
 
                                                         {!msg.bot.isHealthy && (
                                                             <div style={{ marginBottom: '8px' }}>
+                                                                <div style={{
+                                                                    fontWeight: '700',
+                                                                    color: '#000000',
+                                                                    marginBottom: '6px',
+                                                                    fontSize: '16px'
+                                                                }}>
+                                                                    Treatment:
+                                                                </div>
                                                                 {cleanResponseText(msg.bot.brief_treatment)}
 
                                                                 {/* View More button directly below treatment */}
