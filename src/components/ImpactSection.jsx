@@ -1,10 +1,18 @@
 import React from 'react';
 import './ImpactSection.css';
 import farmImage from '../assets/images/Aboutus/3 (5).jpg'; // Reusing an existing image, replace as needed
+import backgroundImage from '../assets/images/Aboutus/3 (2).png';
+import authorImage from '../assets/images/Aboutus/1 (5).jpg';
 
 const ImpactSection = () => {
   return (
-    <div className="impact-section">
+    <div 
+      className="impact-section" 
+      style={{
+        '--background-image': `url(${backgroundImage})`,
+        '--author-image': `url(${authorImage})`
+      }}
+    >
       <div className="container">
         <div className="impact-header" data-aos="fade-up">
           <h6 className="impact-subtitle">OUR MISSION & IMPACT</h6>
