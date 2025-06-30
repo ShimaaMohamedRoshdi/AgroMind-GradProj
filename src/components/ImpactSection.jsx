@@ -6,8 +6,8 @@ import authorImage from '../assets/images/Aboutus/1 (5).jpg';
 
 const ImpactSection = () => {
   return (
-    <div 
-      className="impact-section" 
+    <div
+      className="impact-section"
       style={{
         '--background-image': `url(${backgroundImage})`,
         '--author-image': `url(${authorImage})`
@@ -36,13 +36,13 @@ const ImpactSection = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="col-lg-6" data-aos="fade-left">
             <div className="impact-content">
               <p className="impact-lead">
                 At Agromind, we're committed to revolutionizing agriculture through sustainable practices and innovative technology.
               </p>
-              
+
               <div className="impact-goals">
                 <div className="impact-goal" data-aos="zoom-in" data-aos-delay="100">
                   <div className="goal-icon">🌱</div>
@@ -51,7 +51,7 @@ const ImpactSection = () => {
                     <p>We promote farming methods that preserve soil health, conserve water, and reduce chemical usage.</p>
                   </div>
                 </div>
-                
+
                 <div className="impact-goal" data-aos="zoom-in" data-aos-delay="200">
                   <div className="goal-icon">🧪</div>
                   <div className="goal-content">
@@ -59,7 +59,7 @@ const ImpactSection = () => {
                     <p>Our team continuously researches and develops new agricultural technologies and practices.</p>
                   </div>
                 </div>
-                
+
                 <div className="impact-goal" data-aos="zoom-in" data-aos-delay="300">
                   <div className="goal-icon">👨‍🌾</div>
                   <div className="goal-content">
@@ -68,12 +68,12 @@ const ImpactSection = () => {
                   </div>
                 </div>
               </div>
-              
-            
+
+
             </div>
           </div>
         </div>
-      
+
       </div>
     </div>
   );
