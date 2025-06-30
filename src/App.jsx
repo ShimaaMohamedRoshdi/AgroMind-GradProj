@@ -35,7 +35,7 @@ import Herbicides from "./pages/Herbicides";
 import OrganicPesticides from "./pages/OrganicPesticides";
 import Fertilizers from "./pages/Fertilizers";
 import ShopChemicals from "./pages/ShopChemicals";
-import Insecticides from "./pages/insecticides.JSX";
+import Insecticides from "./pages/Insecticides.jsx";
 import ShopByCategory from "./pages/ShopByCategory";
 import RecommendPlan from "./pages/RecommendPlan";
 import PlanProgress from "./pages/PlanProgress";
