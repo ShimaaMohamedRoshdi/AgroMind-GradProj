@@ -56,7 +56,7 @@
   width: 100%;
   height: auto;
   border-radius: 15px;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
 }
 
 .impact-stats {
@@ -73,7 +73,7 @@
   padding: 15px;
   border-radius: 10px;
   text-align: center;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   min-width: 120px;
 }
 
@@ -164,7 +164,7 @@
   background-color: #1b3a1a;
   color: white;
   transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .impact-testimonial {
@@ -177,7 +177,7 @@
   background-color: white;
   border-radius: 15px;
   padding: 3rem;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.05);
   max-width: 800px;
   margin: 0 auto;
   position: relative;
@@ -254,7 +254,7 @@
     padding-left: 0;
     margin-top: 3rem;
   }
-  
+
   .impact-stats {
     position: relative;
     bottom: auto;
@@ -268,15 +268,15 @@
   .impact-title {
     font-size: 2.2rem;
   }
-  
+
   .impact-lead {
     font-size: 1.1rem;
   }
-  
+
   .testimonial-content {
     padding: 2rem;
   }
-  
+
   .testimonial-quote p {
     font-size: 1.1rem;
   }
