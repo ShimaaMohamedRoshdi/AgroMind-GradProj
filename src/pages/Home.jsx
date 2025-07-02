@@ -10,6 +10,7 @@ import HealthyLifeSection from "../components/HealthyLifeSection";
 import OrganicSection from "../components/OrganicSection";
 import Categories from "../components/Categories";
 import Brands from "../components/Brands";
+import heroBg from '../assets/images/index-2.jpg';
 
 function Home() {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ function Home() {
       <div
         className="hero-section position-relative vh-100 w-100"
         style={{
-          backgroundImage: "url('/src/assets/images/index-2.jpg')",
+          backgroundImage: `url(${heroBg})`,
           backgroundSize: "cover",
           backgroundPosition: "100% center",
           position: "relative",
