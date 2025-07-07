@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Use the working backend URL
 const api = axios.create({
-  baseURL: "https://localhost:7057", // Updated to the working URL
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://localhost:7057", // Use environment variable
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
