@@ -4,8 +4,12 @@ import axios from "axios";
 
 // Determine the base URL based on the environment
 const getBaseUrl = () => {
-  // Use the new server URL
-  return 'http://agromindgp.somee.com';
+  if (import.meta.env.PROD) {
+    // In production, use the production URL. This will be baked in at build time.
+    return 'https://agromind-backend-g6g9beexdpg8heeg.uaenorth-01.azurewebsites.net';
+  }
+  // In development, use the environment variable or a local default.
+  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:5132';
 };
 
 const api = axios.create({

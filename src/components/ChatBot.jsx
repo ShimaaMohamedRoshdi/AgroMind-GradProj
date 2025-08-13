@@ -27,15 +27,6 @@ function ChatBot() {
     const [enhancedResponses, setEnhancedResponses] = useState(new Map());
     const [loadingEnhanced, setLoadingEnhanced] = useState(new Set());
 
-    // Server URLs provided by backend team
-    const SERVER_BASE_URL = 'http://agromindgp.somee.com';
-    const CHAT_ENDPOINTS = {
-        newSession: `${SERVER_BASE_URL}/api/chat/new-session`,
-        palmChat: `${SERVER_BASE_URL}/api/chat/palm-chat`,
-        clearSession: `${SERVER_BASE_URL}/api/chat/clear-session`
-    };
-    const DISEASE_ENDPOINT = `${SERVER_BASE_URL}/api/disease/detect-disease`;
-
     useEffect(() => {
         if (editingMessageId !== null) {
             setInput(editingText);
@@ -51,7 +42,7 @@ function ChatBot() {
 
     const initializeSession = async () => {
         try {
-            const response = await fetch(CHAT_ENDPOINTS.newSession, {
+            const response = await fetch("http://localhost:5005/new-session", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" }
             });
@@ -109,7 +100,7 @@ function ChatBot() {
             setInput("");
 
             try {
-                const res = await fetch(CHAT_ENDPOINTS.palmChat, {
+                const res = await fetch("http://localhost:5005/palm-chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -165,7 +156,7 @@ function ChatBot() {
                     formData.append('prompt', userMsgText); // Add user prompt if provided
                 }
 
-                const res = await fetch(DISEASE_ENDPOINT, {
+                const res = await fetch("http://localhost:5006/detect-disease", {
                     method: "POST",
                     body: formData,
                 });
@@ -206,7 +197,7 @@ function ChatBot() {
                     }
                 }
             } else if (userMsgText) {
-                const res = await fetch(CHAT_ENDPOINTS.palmChat, {
+                const res = await fetch("http://localhost:5005/palm-chat", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -263,7 +254,7 @@ function ChatBot() {
 
     const clearConversation = async () => {
         try {
-            await fetch(CHAT_ENDPOINTS.clearSession, {
+            await fetch("http://localhost:5005/clear-session", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ session_id: sessionId })
