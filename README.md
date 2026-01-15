@@ -1,7 +1,7 @@
 🚀 Our Graduation Project🚀
 🚀 AgroMind: Revolutionizing Smart Farming with AI 🌾
 
-https://drive.google.com/file/d/1e9oJ7TD62KP9GRx5rzRttGZRtmGiGout/view?usp=drive_link
+Demo : https://drive.google.com/file/d/1e9oJ7TD62KP9GRx5rzRttGZRtmGiGout/view?usp=drive_link
 
 Imagine a world where farmers never have to guess again... With AgroMind, that world becomes a reality.
 
