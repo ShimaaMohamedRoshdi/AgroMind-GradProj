@@ -1,6 +1,8 @@
 🚀 Our Graduation Project🚀
 🚀 AgroMind: Revolutionizing Smart Farming with AI 🌾
 
+https://drive.google.com/file/d/1e9oJ7TD62KP9GRx5rzRttGZRtmGiGout/view?usp=drive_link
+
 Imagine a world where farmers never have to guess again... With AgroMind, that world becomes a reality.
 
 AgroMind is an AI-powered agricultural management platform designed to transform traditional farming into a smart, data-driven, and efficient experience. It empowers both farmers and agricultural experts by providing a centralized ecosystem for managing land, tracking crops, and making informed decisions — all through a seamless web interface i want this with normal font size
